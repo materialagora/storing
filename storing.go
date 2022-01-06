@@ -2,8 +2,8 @@ package storing
 
 // Storing interface
 type Storing interface {
-	Upload(string, string, []byte) (string, error)
-	Download(string) ([]byte, error)
-	Provider() string
-	Delete(string) error
+	Upload(name string, contentType string, content []byte) (string, error)
+	Download(path string) ([]byte, error)
+	Provider() (name string)
+	Delete(key string) error
 }
