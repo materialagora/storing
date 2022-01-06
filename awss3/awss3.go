@@ -3,13 +3,14 @@ package awss3
 import (
 	"bytes"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/nuveo/log"
+	"github.com/materialagora/storing"
 )
 
 // Storing implementation for aws s3
@@ -20,23 +21,23 @@ type Storing struct {
 }
 
 // New s3 storing
-func New(opts ...func(*Storing) error) (st *Storing, err error) {
+func New(opts ...func(*Storing) error) (st storing.Storing, err error) {
 	ss, err := session.NewSession()
 	if err != nil {
 		return
 	}
-	st = &Storing{
+	strg := &Storing{
 		Session: ss,
 		ACL:     os.Getenv("AWS_ACL"),
 		Bucket:  os.Getenv("AWS_BUCKET"),
 	}
 	for _, opt := range opts {
-		if err = opt(st); err != nil {
+		if err = opt(strg); err != nil {
 			st = nil
 			return
 		}
 	}
-	return
+	return strg, err
 }
 
 // ACL is an option to set when storing is created
@@ -96,14 +97,14 @@ func (s *Storing) Download(path string) (b []byte, err error) {
 		return
 	}
 
-	tmpfile, err := ioutil.TempFile("", "nuveo")
+	tmpfile, err := ioutil.TempFile("", "materialagora")
 	if err != nil {
 		return
 	}
 	defer func() {
 		rmErr := os.Remove(tmpfile.Name())
 		if rmErr != nil {
-			log.Errorln(rmErr)
+			log.Println("error: ", rmErr)
 		}
 	}()
 
@@ -121,7 +122,7 @@ func (s *Storing) Download(path string) (b []byte, err error) {
 
 // Delete from s3
 func (s *Storing) Delete(key string) (err error) {
-	log.Printf("download file to s3 %v\n", key)
+	log.Printf("delete file from s3 %v\n", key)
 	svc := s3.New(s.Session)
 	obj := &s3.DeleteObjectInput{
 		Bucket: aws.String(s.Bucket),
