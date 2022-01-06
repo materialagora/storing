@@ -15,7 +15,7 @@ export AWS_ACL=XXXXXXXXX
 ## Installation
 
 ```shell
-go get github.com/nuveo/storing
+go get github.com/materialagora/storing
 ```
 
 ## Examples
